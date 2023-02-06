@@ -1,0 +1,380 @@
+---
+title: "Example code for ggplot2"
+author: "Kevin Rue-Albrecht"
+date: "03/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(ggrepel)
+library(cowplot)
+library(patchwork)
+library(gridExtra)
+```
+
+# Exercise
+
+Use `library(ggplot2)` to load the package.
+
+```{r}
+library(ggplot2)
+```
+
+## Specify the dataset.
+
+What does `ggplot(diamonds)` do?
+
+```{r}
+
+data("diamonds")
+ggplot(diamonds)
+```
+
+> Answer: grey box; nothing is specified
+
+## Add the aesthetics.
+
+What does `ggplot(diamonds, aes(x = carat, y = price))` do?
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price))
+```
+
+> Answer: you have plotted the x- and y-axis of the values you have assigned to it, but you have not told it how to display it (geom)
+
+## Add geometric objects
+
+- Add data points showing `carat` on the x-axis and `price` on the y-axis.
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(shape = 21)
+  
+```
+
+- Color data points by `cut`.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, colour = cut)) + 
+  geom_point(shape = 21)
+  
+```
+
+- Add a smoothed mean trend line.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, colour = cut)) + 
+  geom_point(shape = 21) + geom_smooth()
+
+
+```
+
+- Assign that last plot to an object called `obds_diamonds`.
+
+```{r}
+obds_diamonds <- ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(colour = cut), shape = 21) + geom_smooth()
+
+
+```
+
+
+# Exercise
+
+Predict the difference between these two plots
+
+### Plot 1
+
+```{r, include=TRUE}
+ggplot(diamonds, aes(x = carat, y = price, colour = cut)) +
+  geom_point() +
+  geom_smooth()
+```
+
+### Plot 2
+
+```{r, include=TRUE}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point(aes(colour = cut)) +
+  geom_smooth()
+```
+
+> Answer: ggplot takes the information specified in the ggplot argument if nothing is specified in the specific sub-argument
+
+# Exercise
+
+## Trend lines
+
+Using the `ChickWeight` data set:
+
+- Create a scatter plot of weight (y-axis) over time (x-axis).
+
+```{r}
+#load dataset ChickWeight
+data("ChickWeight")
+colnames(ChickWeight)
+
+ggplot(ChickWeight, aes(x = Time, y = weight)) +
+  geom_point()
+
+```
+
+- Color by diet.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet)) +
+  geom_point()
+
+```
+
+- Add a linear mean trend line for each diet.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+At this point you should be able to visually identify
+the diet that leads to the highest mean increase in weight.
+
+> Answer: diet 3
+
+- Facet a ribbon of sub-plots, one per diet.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~ Diet, nrow = 1)
+
+#ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet)) +
+  #geom_point() +
+  #geom_smooth(method = lm) +
+  #facet_wrap(~ Chick, nrow = 10)
+
+```
+
+- Assign that last plot to an object called `obds_chickweight`.
+
+```{r}
+
+obds_chickweight <- ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~ Diet, nrow = 1)
+
+
+```
+
+# Exercise
+
+## Bar plot
+
+- Load the `ggplot2::msleep` data set.
+
+```{r}
+
+msleep <- ggplot2::msleep
+
+```
+
+- Draw a bar plot of number of observations (i.e., rows) for each taxonomic order
+  (i.e, one plot and one bar per taxonomic order).
+
+```{r}
+ggplot(msleep, aes(x = order)) + geom_bar()
+
+```
+
+- Change the angle and font size of the text for the x-axis ticks (not the axis titles).
+  Justify the text of those x-axis ticks as right-aligned.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+ggplot(msleep, aes(x = order)) + geom_bar() + theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1))
+
+```
+
+- Change the value and font size of the title for both x and y axes.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+ggplot(msleep, aes(x = order)) + 
+  geom_bar() + theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count")
+
+```
+
+- Fill each bar with colors, proportionally to the count of each genus.
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+ggplot(msleep, aes(x = order)) + 
+  geom_bar(aes(fill = genus)) + 
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count")
+
+```
+
+From this point onwards, you may need to iteratively resize the text of the ticks and axes for readability.
+
+- Reduce the legend key size.
+  (Recommendation: use `unit(2, "mm")`).
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+ggplot(msleep, aes(x = order)) + 
+  geom_bar(aes(fill = genus)) + 
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count") +
+  theme(legend.key.size = unit(2, "mm"))
+
+
+```
+
+- Force the legend to be display in 3 columns.
+  (Recommendation: use `guide_legend(...)`).
+  (Copy-paste and extend the code chunk above.)
+
+```{r}
+
+
+ggplot(msleep, aes(x = order)) + 
+  geom_bar(aes(fill = genus)) + 
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count") +
+  theme(legend.key.size = unit(2, "mm")) +
+  guides(fill = guide_legend(ncol = 3))
+
+
+
+```
+
+- Add a contour of thin black lines to the bars.
+
+```{r}
+
+
+ggplot(msleep, aes(x = order)) + 
+  geom_bar(aes(fill = genus), colour = "black", linewidth = 0.1) + 
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count") +
+  theme(legend.key.size = unit(2, "mm")) +
+  guides(fill = guide_legend(ncol = 3))
+
+
+
+```
+
+- Assign that last plot to an object called `obds_msleep`.
+
+```{r}
+
+obds_msleep <- ggplot(msleep, aes(x = order)) + 
+  geom_bar(aes(fill = genus), colour = "black", linewidth = 0.1) + 
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1)) + 
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  labs(x = "Order", y = "Count") +
+  theme(legend.key.size = unit(2, "mm")) +
+  guides(fill = guide_legend(ncol = 3)) #fill is what is in your columns, so change to "colour =" or other
+
+```
+
+# Exercise
+
+## Plotting grid
+
+- Collate the plots that we assigend to objects through the day, as a single plot.
+
+  + Plots: `obds_diamonds`, `obds_chickweight`, `obds_msleep`.
+  
+  + Methods: `cowplot::plot_grid()`, `patchwork`, `gridExtra::grid.arrange()`.
+
+Using `cowplot`.
+
+```{r, fig.height=8, fig.width=12}
+library(cowplot)
+
+
+
+first_row <- cowplot::plot_grid(obds_diamonds, obds_chickweight, labels = c("A", "B"))
+
+
+second_row <- cowplot::plot_grid(obds_msleep, labels = "C")
+
+
+combined_plot <- cowplot::plot_grid(first_row, second_row, ncol = 1)
+  
+first_row #define first row
+second_row #define second row
+combined_plot #combined first and second row
+
+
+superplot <- cowplot::plot_grid(obds_diamonds, obds_chickweight, obds_msleep, labels = c("A", "B", "C"), nrow = 2) #makes it as a grid so row 1, column 1 = plot 1, r1/c2 = plot 2, r2/c1 = plot 3
+superplot
+```
+
+Using `patchwork`.
+
+```{r, fig.height=3, fig.width=12}
+library(patchwork)
+
+obds_chickweight + obds_diamonds + obds_msleep #next to each other
+
+patch_plot <- (obds_chickweight + obds_diamonds) / obds_msleep #plots1-2 on row 1, plot 3 on row 2
+```
+
+Using `gridExtra`.
+
+```{r, fig.height=12, fig.width=12}
+
+library(gridExtra)
+
+grid_plot <- gridExtra::grid.arrange(obds_chickweight, obds_diamonds, obds_msleep, ncol = 2)
+
+```
+
+- Export the new plot in a PDF file, and open it in a PDF viewer (e.g. Adobe Acrobat Reader DC).
+
+You will likely need a few attempts to fine-tune the width and height of the output file.
+
+```{r}
+
+ggsave("combined_plot.pdf", combined_plot, width = 12, height = 10, units = "in")
+
+ggsave("superplot.pdf", superplot, width = 12, height = 8, units = "in")
+
+ggsave("patch_plot.pdf", patch_plot, width = 12, height = 8, units = "in")
+
+```
+
+# Exercise
+
+## Pair programming
+
+- Explore the data set `ggplot2::mpg` and generate the most informative plot that you can!
+
+```{r}
+mpg <- ggplot2::mpg
+
+ggplot(mpg, aes(x = ))
+
+```
