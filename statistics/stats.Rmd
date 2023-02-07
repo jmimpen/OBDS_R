@@ -51,44 +51,55 @@ sd(x)
 
 ```{r}
 set.seed(1)
-
-
+x <- rnorm(n = 1000, mean = 10, sd = 5)
 ```
 
 - Inspect the output of the `summary()` function for that vector.
 
 ```{r}
-
+summary(x)
 ```
 
 - Compute the mean and standard deviation for those values.
 
 ```{r}
-
+mean(x)
+sd(x)
 ```
 
-```{r}
-
-```
 
 - Compute the deciles (i.e. 10 evenly spaced quantiles) for those values.
 
 ```{r}
-
+quantile(x, seq(0, 1, 0.1))
 ```
 
 - Visualise the distribution of those values as a histogram.
 
 ```{r}
-
+hist(x, breaks = 100, xlab = NULL)
 ```
+
+
+```{r}
+df <- data.frame(x)
+
+ggplot(df, aes(x = x)) + geom_histogram(binwidth = 1, fill = "grey", colour = "black")
+```
+
 
 - Visualise as vertical lines on the histogram: the mean (red solid), median (red dashed), one standard deviation from the mean (blue solid), and one median absolute deviation from the median (blue dashed).
 
 ```{r}
 
-
-
+ggplot(df, aes(x = x)) + 
+  geom_histogram(binwidth = 1, fill = "grey", colour = "black") + 
+  geom_vline(xintercept = (mean(x)), color = "red") +
+  geom_vline(xintercept = (median(x)), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = (mean(x) - sd(x)), colour = "blue") +
+  geom_vline(xintercept = (mean(x) + sd(x)), colour = "blue") +
+  geom_vline(xintercept = (median(x) - mad(x)), colour = "blue", linetype = "dashed") +
+  geom_vline(xintercept = (median(x) + mad(x)), colour = "blue", linetype = "dashed")
 
 
 ```
@@ -99,7 +110,18 @@ set.seed(1)
 
 ```{r}
 set.seed(1)
+y <- rnorm(n = 1e6, mean = 10, sd = 5)
 
+df_y <- data.frame(y)
+
+ggplot(df_y, aes(x = y)) + 
+  geom_histogram(binwidth = 1, fill = "grey", colour = "black") + 
+  geom_vline(xintercept = (mean(y)), color = "red") +
+  geom_vline(xintercept = (median(y)), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = (mean(y) - sd(y)), colour = "blue") +
+  geom_vline(xintercept = (mean(y) + sd(y)), colour = "blue") +
+  geom_vline(xintercept = (median(y) - mad(y)), colour = "blue", linetype = "dashed") +
+  geom_vline(xintercept = (median(y) + mad(y)), colour = "blue", linetype = "dashed")
 
 ```
 
@@ -111,7 +133,18 @@ For the standard normal distribution ${\mathcal {N}}(\mu=0 ,\sigma ^{2}=1)$:
 
 ```{r}
 
+plot1 <- ggplot(data.frame(x = c(-5, 5)), aes(x = x)) + stat_function(fun = pnorm)
+plot1
 
+vec1 <- seq(from = -5, to = 5, by = 0.1)
+vec2 <- pnorm(q = vec1, mean = 0, sd = 1)
+
+plot(x = vec1, y = vec2)
+
+#emperical cumulative distribution
+ecdf_vec1 <- ecdf(vec1)
+plot(ecdf_vec1)
+  
 
 ```
 
@@ -119,6 +152,13 @@ For the standard normal distribution ${\mathcal {N}}(\mu=0 ,\sigma ^{2}=1)$:
 
 ```{r}
 
+p <- seq(from = 0, to = 1, by = 0.01)
+x <- qnorm(p = p, mean = 0, sd = 1)
+plot(x = p, y = x)
+
+
+plot1 <- ggplot(data.frame(x = c(0, 1)), aes(x = x)) + stat_function(fun = qnorm)
+plot1
 
 
 ```
@@ -126,7 +166,7 @@ For the standard normal distribution ${\mathcal {N}}(\mu=0 ,\sigma ^{2}=1)$:
 - Plot the density function in the range $[-5, 5]$ in 0.1 increment.
 
 ```{r}
-
+vec1
 
 
 ```
@@ -134,18 +174,22 @@ For the standard normal distribution ${\mathcal {N}}(\mu=0 ,\sigma ^{2}=1)$:
 - What is the probability of observing a value greater than 2?
 
 ```{r}
+1 - pnorm(2)
 
+1 - pnorm(q = 2, mean = 0, sd = 1)
 ```
 
 - What is the probability of observing a value between -2 and 2?
 
 ```{r}
+pnorm(2) - pnorm(-2)
 
 ```
 
 - What is the probability of observing a value more extreme than -2 or 2?
 
 ```{r}
+(pnorm(-2)) + (1 - pnorm(2))
 
 ```
 
@@ -583,6 +627,45 @@ Print a short report message.
 cat(sprintf("There are %i bonferonni corrected p-values smaller than 0.05", sum(result_table$bonferroni < 0.05)))
 ```
 
+
+
+Run a Wilcoxon test to compare the vectors 1:10 and 5:14
+```{r}
+
+
+vector1 <- 1:10
+vector2 <- 5:14
+
+wilcox.test(vector1, vector2, paired = TRUE)
+wilcox.test(vector1, vector2, paired = FALSE)
+
+
+```
+
+T-test
+Import the data in the fi le
+gene_exprs.csv
+.
+Run a t-test to compare the gene expressionvalues between the two groups.
+What is the p-value?
+```{r}
+gene_exprs <- read_csv("/project/obds/shared/resources/3_r_stats_genomics/statistics/data/gene_exprs.csv")
+summary(gene_exprs)
+
+unique(gene_exprs$group)
+
+#Use if only two groups in object
+t.test(gene_exprs ~ group, data = gene_exprs)
+
+#Use if more than two groups or if groups need to be specified
+t.test(
+  x = gene_data$gene_exprs[gene_data$group == "groupA"], #x is test 
+  y = gene_data$gene_exprs[gene_data$group == "groupB"]) #y is control group, if not specified then it is zero
+
+```
+
+
+
 # Exercise
 
 ## Testing & Multiple testing correction
@@ -592,16 +675,50 @@ test each gene (i.e., row) in the matrix for differential expression between the
 Start by importing the `logcounts` table and converting it to a matrix.
 
 ```{r}
-logcounts_matrix <- read_excel(   )
+excel_sheets("/t1-data/project/obds/shared/resources/3_r_stats_genomics/statistics/data/GSE111543.xlsx")
 
+logcounts_matrix <- read_excel("/t1-data/project/obds/shared/resources/3_r_stats_genomics/statistics/data/GSE111543.xlsx")
+
+logcounts_matrix <- as.data.frame(logcounts_matrix)
+
+logcounts_matrix <- column_to_rownames(logcounts_matrix, var = "gene")
+
+logcounts_matrix <- as.matrix(logcounts_matrix)
 
 dim(logcounts_matrix)
+
+
+
+
 ```
 
 ```{r}
-cell_info <- read_excel(   )
-# all(rownames(cell_info$Sample) == colnames(logcounts_matrix))
-head(cell_info)
+excel_sheets("/t1-data/project/obds/shared/resources/3_r_stats_genomics/statistics/data/GSE111543.xlsx")
+
+cell_info <- read_excel("/t1-data/project/obds/shared/resources/3_r_stats_genomics/statistics/data/GSE111543.xlsx", sheet = "cell_info")
+
+unique(cell_info$Infection)
+unique(cell_info$Sample)
+
+cells_infected <- cell_info %>% filter(Infection == "STM-LT2") %>% pull(Sample)
+cells_infected
+
+cells_not_infected <- cell_info %>% filter(Infection == "Mock") %>% pull(Sample)
+cells_not_infected
+
+expression_infected <- logcounts_matrix[1, cells_infected]
+expression_infected
+expression_not_infected <- logcounts_matrix[1, cells_not_infected]
+expression_not_infected
+
+gene1_test <- t.test(expression_infected, expression_not_infected)
+gene1_test
+
+str(gene1_test)
+
+gene1_test$p.value
+
+
 ```
 
 ### Approach
@@ -609,7 +726,6 @@ head(cell_info)
 1. Write the code to test a single gene and access the p-value.
 
 ```{r}
-gene_index <- 1
 
 
 
@@ -621,26 +737,30 @@ out$p.value
 2. Write a function that generalises the code to test any one gene and return the p-value.
 
 ```{r}
-t_test_row <- function(index,    ) {
+t_test_row <- function(index) {
+cells_infected <- cell_info %>% filter(Infection == "STM-LT2") %>% pull(Sample)
+cells_not_infected <- cell_info %>% filter(Infection == "Mock") %>% pull(Sample)
 
+expression_infected <- logcounts_matrix[index, cells_infected]
+expression_not_infected <- logcounts_matrix[index, cells_not_infected]
 
+gene_test <- t.test(expression_infected, expression_not_infected)
 
-
-
-
+return(gene_test$p.value)
 }
-t_test_row(index = 1,    )
+
+t_test_row(2) 
+
+
 ```
 
 3. Use the function `vapply` to test every row in the matrix and collect a vector of p-values.
 
 ```{r}
-t_test_pvalues <- vapply(
-  X =    ,
-  FUN =     ,
-  FUN.VALUE =     ,
 
-)
+t_test_pvalues <- vapply(X = row.names(logcounts_matrix), 
+                         FUN = t_test_row,
+                         FUN.VALUE = numeric(1))
 
 head(t_test_pvalues)
 ```
